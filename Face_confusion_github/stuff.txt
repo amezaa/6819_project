@@ -1,0 +1,3 @@
+import os
+os.path.exists(path) # Returns whether the path (directory or file) exists or not
+os.path.isfile(path) # Returns whether the file exists or not
