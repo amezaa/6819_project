@@ -13,8 +13,7 @@ def run(input_file):
 
     data_transforms = transforms.Compose(
         [
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
+            transforms.Resize(200),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize([0.5]*3,[0.5]*3)
