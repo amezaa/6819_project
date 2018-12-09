@@ -6,51 +6,35 @@ from torch.autograd import Variable
 from torchvision import transforms
 import PIL 
 import cv2
+from models.ResNet import *
+from face_detector import *
 
 #This is the Label
-Labels = { 0 : 'A',
-           1 : 'B',
-           2 : 'C',
-           3 : 'D',
-           4 : 'E',
-           5 : 'F',
-           6 : 'G',
-           7 : 'H',
-           8 : 'I',
-           9 : 'K',
-           10: 'L',
-           11: 'M',
-           12: 'N',
-           13: 'O',
-           14: 'P',
-           15: 'Q',
-           16: 'R',
-           17: 'S',
-           18: 'T',
-           19: 'U',
-           20: 'V',
-           21: 'W',
-           22: 'X',
-           23: 'Y'
-        }
+Labels = {0:"Angry",
+          1: "Disgust",
+          2: "Surprised",
+          3: "Happy",
+          4: "Sad",
+          5: "Surprised",
+          6: "Neutral"}
 
 # Let's preprocess the inputted frame
 
 data_transforms = transforms.Compose(
     [
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
+        transforms.Resize(200),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize([0.5]*3,[0.5]*3)
     ]
 ) 
 
-
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")   ##Assigning the Device which will do the calculation
-model  = torch.load("model.9") #ResNet50 - Load model to CPU
+model = resnet_50()
 model  = model.to(device)   #set where to run the model and matrix calculation
+model.load_state_dict(torch.load("models/model.9", map_location='cpu'))
 model.eval()                #set the device to eval() mode for testing
+
 
 #Set the Webcam 
 def Webcam_720p():
@@ -74,8 +58,6 @@ def preprocess(image):
     #print(image)                             
     image = data_transforms(image)
     image = image.float()
-    #image = Variable(image, requires_autograd=True)
-    #image = image.cuda()
     image = image.unsqueeze(0) #I don't know for sure but Resnet-50 model seems to only
                                #accpets 4-D Vector Tensor so we need to squeeze another
     return image                            #dimension out of our 3-D vector Tensor
@@ -94,29 +76,25 @@ sequence = 0
 while True:
     ret, frame = cap.read() #Capture each frame
     
-    
-    if fps == 4:
-        image        = frame[100:450,150:570]
-        image_data   = preprocess(image)
-        print(image_data)
-        prediction   = model(image_data)
+    faces = detect(frame,shape_predictor)
+
+    if faces != []:
+        faces = faces[0]
+        image = frame[faces[1]:faces[1]+faces[3], faces[0]:faces[0]+faces[2]]
+        image_data = preprocess(image)
+        prediction = model(image_data)
         result,score = argmax(prediction)
-        fps = 0
-        if result >= 0.5:
-            show_res  = result
-            show_score= score
-        else:
-            show_res   = "Nothing"
-            show_score = score
-        
+        print(result, score)
+        print(" ")
+
     fps += 1
-    cv2.putText(frame, '%s' %(show_res),(950,250), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 3)
-    cv2.putText(frame, '(score = %.5f)' %(show_score), (950,300), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2)
-    cv2.rectangle(frame,(400,150),(900,550), (250,0,0), 2)
-    cv2.imshow("ASL SIGN DETECTER", frame)
+    #cv2.putText(frame, '%s' %(show_res),(950,250), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 3)
+    #cv2.putText(frame, '(score = %.5f)' %(show_score), (950,300), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2)
+    #cv2.rectangle(frame,(400,150),(900,550), (250,0,0), 2)
+    cv2.imshow("Face Detection", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 cap.release()
-cv2.destroyWindow("ASL SIGN DETECTER")
+cv2.destroyWindow("Face Detection")
