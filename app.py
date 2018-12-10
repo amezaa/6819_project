@@ -78,19 +78,26 @@ while True:
     
     faces = detect(frame,shape_predictor)
 
+    faces_results = []
+
     if faces != []:
-        faces = faces[0]
-        image = frame[faces[1]:faces[1]+faces[3], faces[0]:faces[0]+faces[2]]
-        image_data = preprocess(image)
-        prediction = model(image_data)
-        result,score = argmax(prediction)
-        print(result, score)
-        print(" ")
+        for face in faces:
+        #faces = faces[0]
+            image = frame[face[1]:face[1]+face[3], face[0]:face[0]+face[2]]
+            #cv2.imshow("cut", image)
+            image_data = preprocess(image)
+            prediction = model(image_data)
+            result,score = argmax(prediction)
+            faces_results.append((result, score))
+            print(result, score)
+            print(" ")
 
     fps += 1
-    #cv2.putText(frame, '%s' %(show_res),(950,250), cv2.FONT_HERSHEY_SIMPLEX, 2, (255,255,255), 3)
-    #cv2.putText(frame, '(score = %.5f)' %(show_score), (950,300), cv2.FONT_HERSHEY_SIMPLEX, 1,(255,255,255),2)
-    #cv2.rectangle(frame,(400,150),(900,550), (250,0,0), 2)
+    for i, face in enumerate(faces):
+        cv2.putText(frame,faces_results[i][0], (face[0],face[1]), cv2.FONT_HERSHEY_SIMPLEX, 1,(0,255,0),2)
+        cv2.rectangle(frame, (face[0],face[1]), (face[0] + face[2],face[1]+face[3]),(0,255,0), 2)
+        
+
     cv2.imshow("Face Detection", frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
