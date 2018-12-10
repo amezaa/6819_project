@@ -18,6 +18,11 @@ Labels = {0:"Angry",
           5: "Surprised",
           6: "Neutral"}
 
+Labels = {0: "Happy",
+          1: "Sad",
+          2: "Surprised",
+          3: "Neutral"}
+
 # Let's preprocess the inputted frame
 
 data_transforms = transforms.Compose(
@@ -32,7 +37,7 @@ data_transforms = transforms.Compose(
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")   ##Assigning the Device which will do the calculation
 model = resnet_50()
 model  = model.to(device)   #set where to run the model and matrix calculation
-model.load_state_dict(torch.load("models/model.9", map_location='cpu'))
+model.load_state_dict(torch.load("models/5_emotions", map_location='cpu'))
 model.eval()                #set the device to eval() mode for testing
 
 
