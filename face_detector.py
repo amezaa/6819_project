@@ -37,7 +37,7 @@ def detect(image, shape_predictor):
         # [i.e., (x, y, w, h)], then draw the face bounding box
         (x, y, w, h) = face_utils.rect_to_bb(rect)
         cropped_images.append((x,y,w,h)) #image[y:y+h, x:x+w])
-        #cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
      
 # show the output image with the face detections + facial landmarks
     #return image
